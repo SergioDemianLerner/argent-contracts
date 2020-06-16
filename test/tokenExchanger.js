@@ -7,6 +7,7 @@ const ModuleRegistry = require("../build/ModuleRegistry");
 const KyberNetwork = require("../build/KyberNetworkTest");
 const GuardianStorage = require("../build/GuardianStorage");
 const TokenExchanger = require("../build/TokenExchanger");
+const RelayerModule = require("../build/RelayerModule");
 const ERC20 = require("../build/TestERC20");
 
 const { ETH_TOKEN } = require("../utils/utilities.js");
@@ -31,12 +32,15 @@ describe("Token Exchanger", function () {
   let kyber;
   let exchanger;
   let erc20;
+  let relayerModule;
 
   before(async () => {
     deployer = manager.newDeployer();
     const registry = await deployer.deploy(ModuleRegistry);
     kyber = await deployer.deploy(KyberNetwork);
     const guardianStorage = await deployer.deploy(GuardianStorage);
+    relayerModule = await deployer.deploy(RelayerModule, {}, registry.contractAddress, guardianStorage.contractAddress, ethers.constants.AddressZero);
+    manager.setRelayerModule(relayerModule);
     exchanger = await deployer.deploy(TokenExchanger, {},
       registry.contractAddress, guardianStorage.contractAddress, kyber.contractAddress, collector.address, FEE_RATIO);
 
@@ -46,7 +50,7 @@ describe("Token Exchanger", function () {
   beforeEach(async () => {
     const proxy = await deployer.deploy(Proxy, {}, walletImplementation.contractAddress);
     wallet = deployer.wrapDeployedContract(BaseWallet, proxy.contractAddress);
-    await wallet.init(owner.address, [exchanger.contractAddress]);
+    await wallet.init(owner.address, [exchanger.contractAddress, relayerModule.contractAddress]);
     erc20 = await deployer.deploy(ERC20, {}, [kyber.contractAddress, wallet.contractAddress], 10000000, DECIMALS); // TOKN contract with 10M tokens (5M TOKN for wallet and 5M TOKN for kyber)
     await kyber.addToken(erc20.contractAddress, TOKEN_RATE, DECIMALS);
     await infrastructure.sendTransaction({ to: wallet.contractAddress, value: 50000000 });
@@ -99,7 +103,7 @@ describe("Token Exchanger", function () {
         erc20.contractAddress,
         "10000000000000000000000",
         0,
-      ], wallet, [owner]);
+      ], wallet, [owner]); console.log(txReceipt.events);
       const { destAmount } = txReceipt.events.find((log) => log.event === "TokenExchanged").args;
       const afterERC20 = await erc20.balanceOf(wallet.contractAddress);
       const afterETH = await deployer.provider.getBalance(wallet.contractAddress);
