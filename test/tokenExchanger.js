@@ -103,8 +103,8 @@ describe("Token Exchanger", function () {
         erc20.contractAddress,
         "10000000000000000000000",
         0,
-      ], wallet, [owner]); console.log(txReceipt.events);
-      const { destAmount } = txReceipt.events.find((log) => log.event === "TokenExchanged").args;
+      ], wallet, [owner]);
+      const { destAmount } = (await utils.parseLogs(txReceipt, exchanger, "TokenExchanged"))[0]; 
       const afterERC20 = await erc20.balanceOf(wallet.contractAddress);
       const afterETH = await deployer.provider.getBalance(wallet.contractAddress);
 
@@ -148,7 +148,7 @@ describe("Token Exchanger", function () {
         "10000000000000000000000",
         0,
       ], wallet, [owner]);
-      const { destAmount } = txReceipt.events.find((log) => log.event === "TokenExchanged").args;
+      const { destAmount } = (await utils.parseLogs(txReceipt, exchanger, "TokenExchanged"))[0]; 
       const afterERC20 = await erc20.balanceOf(wallet.contractAddress);
       const afterETH = await deployer.provider.getBalance(wallet.contractAddress);
       assert.isTrue(beforeERC20.sub(afterERC20).eq(srcAmount), "should send the tokens");
