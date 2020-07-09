@@ -1,6 +1,5 @@
 /* global accounts */
 const ethers = require("ethers");
-
 const Proxy = require("../build/Proxy");
 const BaseWallet = require("../build/BaseWallet");
 const ModuleRegistry = require("../build/ModuleRegistry");
@@ -9,7 +8,6 @@ const GuardianStorage = require("../build/GuardianStorage");
 const TokenExchanger = require("../build/TokenExchanger");
 const RelayerModule = require("../build/RelayerModule");
 const ERC20 = require("../build/TestERC20");
-
 const { ETH_TOKEN } = require("../utils/utilities.js");
 
 const DECIMALS = 12; // number of decimal for TOKN contract
@@ -39,7 +37,11 @@ describe("Token Exchanger", function () {
     const registry = await deployer.deploy(ModuleRegistry);
     kyber = await deployer.deploy(KyberNetwork);
     const guardianStorage = await deployer.deploy(GuardianStorage);
-    relayerModule = await deployer.deploy(RelayerModule, {}, registry.contractAddress, guardianStorage.contractAddress, ethers.constants.AddressZero);
+    relayerModule = await deployer.deploy(RelayerModule, {},
+      registry.contractAddress,
+      guardianStorage.contractAddress,
+      ethers.constants.AddressZero,
+      ethers.constants.AddressZero);
     manager.setRelayerModule(relayerModule);
     exchanger = await deployer.deploy(TokenExchanger, {},
       registry.contractAddress, guardianStorage.contractAddress, kyber.contractAddress, collector.address, FEE_RATIO);
@@ -104,7 +106,7 @@ describe("Token Exchanger", function () {
         "10000000000000000000000",
         0,
       ], wallet, [owner]);
-      const { destAmount } = (await utils.parseLogs(txReceipt, exchanger, "TokenExchanged"))[0]; 
+      const { destAmount } = (await utils.parseLogs(txReceipt, exchanger, "TokenExchanged"))[0];
       const afterERC20 = await erc20.balanceOf(wallet.contractAddress);
       const afterETH = await deployer.provider.getBalance(wallet.contractAddress);
 
@@ -148,7 +150,7 @@ describe("Token Exchanger", function () {
         "10000000000000000000000",
         0,
       ], wallet, [owner]);
-      const { destAmount } = (await utils.parseLogs(txReceipt, exchanger, "TokenExchanged"))[0]; 
+      const { destAmount } = (await utils.parseLogs(txReceipt, exchanger, "TokenExchanged"))[0];
       const afterERC20 = await erc20.balanceOf(wallet.contractAddress);
       const afterETH = await deployer.provider.getBalance(wallet.contractAddress);
       assert.isTrue(beforeERC20.sub(afterERC20).eq(srcAmount), "should send the tokens");
