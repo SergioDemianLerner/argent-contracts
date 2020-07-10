@@ -38,5 +38,5 @@ cp build/TestUpgradedMakerV2Manager.json .coverage_artifacts/TestUpgradedMakerV2
 cp build/ERC20Approver.json .coverage_artifacts/ERC20Approver.json
 cp build/TestOnlyOwnerModule.json .coverage_artifacts/TestOnlyOwnerModule.json
 cp build/FakeWallet.json .coverage_artifacts/FakeWallet.json
-cp build/BadModuleRelayer.json .coverage_artifacts/BadModuleRelayer.json
+cp build/BadModule.json .coverage_artifacts/BadModule.json
 cp build/DS*.json .coverage_artifacts
